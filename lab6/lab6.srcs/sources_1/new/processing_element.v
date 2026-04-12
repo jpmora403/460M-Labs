@@ -85,8 +85,11 @@ module PE (
                 a_out <= a_in;
                 b_out <= b_in;
                 done  <= 1'b1;
-                state <= IDLE;
-
+                if (start) begin
+                    state <= ADD_START;
+                end else begin
+                    state <= PASS;
+                end
             end
         endcase
         end
