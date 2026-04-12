@@ -18,6 +18,7 @@ module PE (
                PASS      = 3'd4;
 
     reg [2:0] state;
+    reg [2:0] next_state;
 
     wire [7:0] product;
     wire mult_v;
@@ -85,10 +86,6 @@ module PE (
             end
 
             PASS: begin
-                if (!start) begin
-                    a_out <= a_in;
-                    b_out <= b_in;
-                end
                 if (start) begin
                     state <= ADD_START;
                 end else begin
@@ -96,5 +93,17 @@ module PE (
                 end
             end
         endcase
+        end
+        always @(*) begin
+            if (state == ADD_WAIT)
+                next_state <= add_done ? PASS : ADD_WAIT;
+            else
+                next_state <= 0;
+        end
+        always @(posedge clk) begin
+            if (next_state == PASS) begin
+                a_out <= a_in;
+                b_out <= b_in;
+            end
         end
 endmodule
