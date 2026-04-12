@@ -43,7 +43,7 @@ localparam SHIFT4 = 4'b0101;
 localparam SHIFT5 = 4'b0110;
 localparam _WAIT = 4'b0111;
 localparam HANG = 4'b1000;
-localparam DONE = 4'b1001;
+localparam _DONE = 4'b1001;
 
 reg [3:0] current_state, next_state;
 reg [3:0] state_counter;
@@ -73,6 +73,7 @@ always @(*) begin
         SHIFT2: next_state = _WAIT;
         SHIFT3: next_state = _WAIT;
         SHIFT4: next_state = _WAIT;
+        SHIFT5: next_state = _WAIT;
         _WAIT: next_state = wait_next_state;
         HANG: next_state = _WAIT;
     endcase     
@@ -82,28 +83,34 @@ always @(*) begin
     case (state_counter)
         1: wait_next_state = pe_done[0] ? SHIFT1 : _WAIT;
         2: wait_next_state = (pe_done[0] & pe_done[1] & pe_done[3]) ? SHIFT2 : _WAIT;
-        3: wait_next_state = &pe_done[4:0] ? SHIFT1 : _WAIT;
-        4: wait_next_state = &pe_done[7:0] ? SHIFT1 : _WAIT;
-        5: wait_next_state = &pe_done ? SHIFT1 : _WAIT;
-        6: wait_next_state = &pe_done ? SHIFT1 : _WAIT;
-        7: wait_next_state = &pe_done ? SHIFT1 : _WAIT;
-        8: wait_next_state = DONE;
+        3: wait_next_state = &pe_done[4:0] ? SHIFT3 : _WAIT;
+        4: wait_next_state = &pe_done[7:0] ? SHIFT4 : _WAIT;
+        5: wait_next_state = &pe_done ? HANG : _WAIT;
+        6: wait_next_state = &pe_done ? HANG : _WAIT;
+        7: wait_next_state = &pe_done ? HANG : _WAIT;
+        8: wait_next_state = _DONE;
     endcase
 end
 
 always @(*) begin
-    pe_start = 8'b00000000;
+    pe_start = 9'b000000000;
     case (current_state)
-        0: pe_start = 0;
-        1: pe_start[0] = 1;
+        0: pe_start = 9'b000000000;
+        1: pe_start[0] = 9'b000000001;
         2: begin
             pe_start[0] = 1;
             pe_start[1] = 1;
+            pe_start[2] = 0;
             pe_start[3] = 1;
+            pe_start[8:4] = 5'b00000;
         end
-        3: pe_start[4:0] = 5'b11111;
-        4:pe_start[7:0] = 8'b11111111;
-        7: pe_start = 0;
+        3: begin
+            pe_start[4:0] = 5'b11111;
+            pe_start[8:5] = 4'b0000;
+        end
+        4: pe_start[7:0] = 8'b11111111;
+        7: pe_start = 9'b000000000;
+        
         default: pe_start = 9'b111111111;
     endcase
 end
@@ -154,6 +161,7 @@ always @(posedge clk) begin
             side2 <= a22;
             top2 <= b22;
         end
+        HANG: state_counter <= state_counter + 1;
     endcase
 end
         
