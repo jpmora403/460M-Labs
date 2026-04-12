@@ -50,9 +50,12 @@ module PE (
     acc = 8'h00;
     add_start = 1'b0;
    end
+   
+    always @(*) begin
+        done = state == PASS;
+    end
 
     always @(posedge clk) begin
-        done       <= 1'b0;
 
         case (state)
             IDLE: begin
@@ -84,7 +87,6 @@ module PE (
             PASS: begin
                 a_out <= a_in;
                 b_out <= b_in;
-                done  <= 1'b1;
                 if (start) begin
                     state <= ADD_START;
                 end else begin

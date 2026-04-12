@@ -41,8 +41,8 @@ localparam SHIFT2 = 4'b0011;
 localparam SHIFT3 = 4'b0100;
 localparam SHIFT4 = 4'b0101;
 localparam SHIFT5 = 4'b0110;
+localparam SHIFT6 = 4'b1000;
 localparam _WAIT = 4'b0111;
-localparam HANG = 4'b1000;
 localparam _DONE = 4'b1001;
 
 reg [3:0] current_state, next_state;
@@ -74,8 +74,8 @@ always @(*) begin
         SHIFT3: next_state = _WAIT;
         SHIFT4: next_state = _WAIT;
         SHIFT5: next_state = _WAIT;
+        SHIFT6: next_state = _WAIT;
         _WAIT: next_state = wait_next_state;
-        HANG: next_state = _WAIT;
     endcase     
 end
 
@@ -83,11 +83,11 @@ always @(*) begin
     case (state_counter)
         1: wait_next_state = pe_done[0] ? SHIFT1 : _WAIT;
         2: wait_next_state = (pe_done[0] & pe_done[1] & pe_done[3]) ? SHIFT2 : _WAIT;
-        3: wait_next_state = &pe_done[4:0] ? SHIFT3 : _WAIT;
-        4: wait_next_state = &pe_done[7:0] ? SHIFT4 : _WAIT;
-        5: wait_next_state = &pe_done ? HANG : _WAIT;
-        6: wait_next_state = &pe_done ? HANG : _WAIT;
-        7: wait_next_state = &pe_done ? HANG : _WAIT;
+        3: wait_next_state = (&pe_done[4:0] & pe_done[6]) ? SHIFT3 : _WAIT;
+        4: wait_next_state = &pe_done[7:1] ? SHIFT4 : _WAIT;
+        5: wait_next_state = (&pe_done[8:4] & &pe_done[3:2]) ? SHIFT5 : _WAIT;
+        6: wait_next_state = (pe_done[5] & pe_done[7] & pe_done[8]) ? SHIFT6 : _WAIT;
+        7: wait_next_state = pe_done[8] ? _DONE : _WAIT;
         8: wait_next_state = _DONE;
     endcase
 end
@@ -98,20 +98,43 @@ always @(*) begin
         0: pe_start = 9'b000000000;
         1: pe_start[0] = 9'b000000001;
         2: begin
-            pe_start[0] = 1;
-            pe_start[1] = 1;
-            pe_start[2] = 0;
-            pe_start[3] = 1;
+            pe_start[0] = 1'b1;
+            pe_start[1] = 1'b1;
+            pe_start[2] = 1'b0;
+            pe_start[3] = 1'b1;
             pe_start[8:4] = 5'b00000;
         end
         3: begin
             pe_start[4:0] = 5'b11111;
-            pe_start[8:5] = 4'b0000;
+            pe_start[6] = 1'b1;
+            pe_start[8:7] = 2'b00;
+            pe_start[5] = 1'b0;
         end
-        4: pe_start[7:0] = 8'b11111111;
+        4: begin
+            pe_start[7:1] = 7'b1111111;
+            pe_start[8] = 1'b0;
+            pe_start[0] = 1'b0;
+        end
+        5: begin
+            pe_start[2] = 1'b1;
+            pe_start[8:4] = 5'b11111;
+            pe_start[1:0] = 2'b00;
+            pe_start[3] = 1'b0;
+        end 
+        6: begin
+            pe_start[5] = 1'b1;
+            pe_start[7] = 1'b1;
+            pe_start[8] = 1'b1;
+            pe_start[4:0] = 5'b00000;
+            pe_start[6] = 1'b0;
+        end
+        8: begin
+            pe_start = 9'b100000000;
+        end
         7: pe_start = 9'b000000000;
+        9: pe_start = 9'b000000000;
         
-        default: pe_start = 9'b111111111;
+        default: pe_start = 9'b000000000;
     endcase
 end
         
@@ -161,7 +184,8 @@ always @(posedge clk) begin
             side2 <= a22;
             top2 <= b22;
         end
-        HANG: state_counter <= state_counter + 1;
+        SHIFT5: state_counter <= state_counter + 1;
+        SHIFT6: state_counter <= state_counter + 1;
     endcase
 end
         
