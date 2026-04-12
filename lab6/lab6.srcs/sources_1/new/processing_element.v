@@ -85,8 +85,10 @@ module PE (
             end
 
             PASS: begin
-                a_out <= a_in;
-                b_out <= b_in;
+                if (!start) begin
+                    a_out <= a_in;
+                    b_out <= b_in;
+                end
                 if (start) begin
                     state <= ADD_START;
                 end else begin
