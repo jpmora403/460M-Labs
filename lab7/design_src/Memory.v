@@ -20,7 +20,7 @@ module Memory(CS, WE, CLK, ADDR, Mem_Bus);
         begin
             RAM[i] = 32'd0;
         end
-        $readmemh("MIPS_Instructions.mem", RAM);
+        $readmemb("rotate.mem", RAM);
   end
 
   assign Mem_Bus = ((CS == 1'b0) || (WE == 1'b1)) ? 32'bZ : data_out;

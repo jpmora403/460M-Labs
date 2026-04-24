@@ -4,10 +4,12 @@
 module MIPS_Testbench ();
   reg CLK;
   reg RST;
+  reg halt;
   wire CS;
   wire WE;
   wire [31:0] Mem_Bus;
   wire [6:0] Address;
+  wire [31:0] r1_out;
   
   integer i;
   parameter N = 10;
@@ -31,7 +33,7 @@ module MIPS_Testbench ();
     expected[10] = 32'h00412022;
   end
 
-  MIPS CPU(CLK, RST, CS, WE, Address, Mem_Bus);
+  MIPS CPU(halt, CLK, RST, CS, WE, Address, Mem_Bus, r1_out);
   Memory MEM(CS, WE, CLK, Address, Mem_Bus);
 
   always #5 CLK <= ~CLK;
@@ -46,6 +48,7 @@ module MIPS_Testbench ();
     @(posedge CLK);
     // driving reset low here puts processor in normal operating mode
     RST <= 1'b0;
+    halt <= 0;
 
     for(i = 1; i <= N; i = i + 1) begin
         @(posedge WE);
