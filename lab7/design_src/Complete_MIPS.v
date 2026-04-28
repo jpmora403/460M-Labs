@@ -28,7 +28,9 @@ module Complete_MIPS(
   MIPS CPU(halt, SCLK, RST, CS, WE, ADDR, Mem_Bus, r1_out, switch);
   Memory MEM(CS, WE, SCLK, ADDR, Mem_Bus);
   
-  assign led [7:0] = r1_out [7:0];
+  //assign led [7:0] = r1_out [7:0];
+  
+  
   
 
 

@@ -18,7 +18,7 @@ module REG(
   reg [31:0] REG [0:31];
   integer i;
    
-  assign r1_out = REG[1];
+
   
   initial begin
     ReadReg1 = 0;
@@ -34,8 +34,10 @@ module REG(
     if(RegW == 1'b1)
       REG[DR] <= Reg_In[31:0];
 
+
     ReadReg1 <= REG[SR1];
     ReadReg2 <= REG[SR2];
+    REG[1] <= {29'b0,switch[2:0]};
   end
 endmodule
 
