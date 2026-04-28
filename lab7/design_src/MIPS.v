@@ -7,12 +7,16 @@
 `define f_code instr[5:0]
 `define numshift instr[10:6]
 
-module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
-  input CLK, RST, halt;
-  output reg CS, WE;
-  output [6:0] ADDR;
-  inout [31:0] Mem_Bus;
-  output [31:0] r1_out;
+module MIPS (
+  input CLK, RST, halt,
+  output reg CS, WE,
+  output [6:0] ADDR,
+  inout [31:0] Mem_Bus,
+  output [31:0] r1_out,
+  output [31:0] r2_out,
+  input [2:0] switch
+  );
+
 
   //special instructions (opcode == 000000), values of F code (bits 5-0):
   parameter add = 6'b100000;
