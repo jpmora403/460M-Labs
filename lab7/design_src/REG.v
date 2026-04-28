@@ -8,10 +8,12 @@ module REG(
   input [4:0] SR1,
   input [4:0] SR2,
   input [31:0] Reg_In,
-  input [2:0] switch,
+  
   output reg [31:0] ReadReg1,
   output reg [31:0] ReadReg2,
-  output [31:0] r1_out
+  output [31:0] r1_out,
+  output [31:0] r2_out,
+  input [2:0] switch
   );
 
 
@@ -19,6 +21,8 @@ module REG(
   integer i;
    
 
+  assign r2_out = REG[2];
+  
   
   initial begin
     ReadReg1 = 0;
