@@ -1,16 +1,19 @@
 `timescale 1ns / 1ps
 
 
-module REG(CLK, RegW, DR, SR1, SR2, Reg_In, ReadReg1, ReadReg2, r1_out);
-  input CLK;
-  input RegW;
-  input [4:0] DR;
-  input [4:0] SR1;
-  input [4:0] SR2;
-  input [31:0] Reg_In;
-  output reg [31:0] ReadReg1;
-  output reg [31:0] ReadReg2;
-  output [31:0] r1_out;
+module REG(
+  input CLK,
+  input RegW,
+  input [4:0] DR,
+  input [4:0] SR1,
+  input [4:0] SR2,
+  input [31:0] Reg_In,
+  input [2:0] switch,
+  output reg [31:0] ReadReg1,
+  output reg [31:0] ReadReg2,
+  output [31:0] r1_out
+  );
+
 
   reg [31:0] REG [0:31];
   integer i;
