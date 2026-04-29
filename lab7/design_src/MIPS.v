@@ -29,7 +29,11 @@ module MIPS (
   parameter sll = 6'b000000;
   parameter jr = 6'b001000;
   parameter rbit = 6'b101111;
-  
+  parameter rev = 6'b110000;
+  parameter add8 = 6'b101101;
+  parameter sadd = 6'b110001;
+  parameter ssub = 6'b110010;
+
 
   //non-special instructions, values of opcodes:
   parameter addi = 6'b001000;
@@ -121,10 +125,12 @@ module MIPS (
           else if (`opcode == andi) op = and1;
           else if (`opcode == ori) op = or1;
           else if (`opcode == lui) op = lui;
+          else if (`f_code == rbit) op = rbit;
+          else if (`f_code == rev) op = rev;
         end
       end
       2: begin //execute
-        nstate = 3'd3;  
+        nstate = 3'd3;
         if (opsave == and1) alu_result = alu_in_A & alu_in_B;
         else if (opsave == or1) alu_result = alu_in_A | alu_in_B;
         else if (opsave == add) alu_result = alu_in_A + alu_in_B;
@@ -134,6 +140,11 @@ module MIPS (
         else if (opsave == slt) alu_result = (alu_in_A < alu_in_B)? 32'd1 : 32'd0;
         else if (opsave == xor1) alu_result = alu_in_A ^ alu_in_B;
         else if (opsave == lui) alu_result = alu_in_B << 16;
+        else if (opsave == rbit) alu_result = rbit_func(alu_in_A);
+        else if (opsave == rev) alu_result = rev_func(alu_in_A);
+        else if (opsave == add8) alu_result = add8_func(alu_in_A, alu_in_B);
+        else if (opsave == sadd) alu_result = sadd_func(alu_in_A, alu_in_B);
+        else if (opsave == sadd) alu_result = ssub_func(alu_in_A, alu_in_B);
         if (((alu_in_A == alu_in_B)&&(`opcode == beq)) || ((alu_in_A != alu_in_B)&&(`opcode == bne))) begin
           npc = pc + imm_ext[6:0];
           if (halt)
@@ -177,7 +188,7 @@ module MIPS (
         else
             nstate = 3'd0;
         CS = 1;
-        if ((`opcode == lw) || (`opcode == lui)) regw = 1;    
+        if ((`opcode == lw) || (`opcode == lui)) regw = 1;
       end
       7: begin
         if (halt)
@@ -213,6 +224,63 @@ module MIPS (
 
   end //always
 
+  function [31:0] rbit_func;
+      input [31:0] rt;
+      integer i;
+
+      begin
+          for (i = 0; i < 32; i = i + 1) begin
+              rbit_func[i] = rt[31 - i];
+          end
+      end
+  endfunction
+
+  function [31:0] rev_func;
+      input [31:0] rt;
+      integer i;
+
+      begin
+          rev_func[31:24] = rt[7:0];
+          rev_func[23:16] = rt[15:8];
+          rev_func[15:8] = rt[23:16];
+          rev_func[7:0] = rt [31:24];
+      end
+  endfunction
+
+  function [31:0] add8_func;
+      input [31:0] rs;
+      input [31:0] rt;
+
+      begin
+          add8_func[31:24] = rs[31:24] + rt[31:24];
+          add8_func[23:16] = rs[23:16] + rt[23:16];
+          add8_func[15:8] = rs[15:8] + rt[15:8];
+          add8_func[7:0] = rs[7:0] + rt[7:0];
+      end
+  endfunction
+
+  function [31:0] sadd_func;
+      input [31:0] rs;
+      input [31:0] rt;
+
+      begin
+          if (rs < rt)
+              sadd_func = 0;
+          else
+              sadd_func = rs - rt;
+      end
+  endfunction
+
+  function [31:0] ssub_func;
+      input [31:0] rs;
+      input [31:0] rt;
+
+      begin
+          if (rs < rt)
+              ssub_func = 0;
+          else
+              ssub_func = rs - rt;
+      end
+  endfunction
+
 endmodule
-
-
