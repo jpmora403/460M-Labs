@@ -10,7 +10,7 @@ module Complete_MIPS(
   input [2:0] switch,
   input btnL, btnR,
   output [7:0] led,
-  output reg [6:0] seg,
+  output reg [0:6] seg,
   output reg [3:0] an
   );
 
@@ -35,8 +35,8 @@ module Complete_MIPS(
   Memory MEM(CS, WE, SCLK, ADDR, Mem_Bus);
   debouncer d1(.btn_in(btnR), .clk(CLK), .btn_out(btnR_d));
   debouncer d2(.btn_in(btnL), .clk(CLK), .btn_out(btnL_d));
-  single_pulser s1(.clk(CLK), .btn_in(btnR_d), .pulse(btnR_s));
-  single_pulser s2(.clk(CLK), .btn_in(btnL_d), .pulse(btnL_s));
+  //single_pulser s1(.clk(CLK), .btn_in(btnR_d), .pulse(btnR_s));
+  //single_pulser s2(.clk(CLK), .btn_in(btnL_d), .pulse(btnL_s));
   
   
   //assign led [7:0] = r1_out [7:0];

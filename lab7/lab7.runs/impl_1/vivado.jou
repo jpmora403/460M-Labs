@@ -3,8 +3,8 @@
 # SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
 # IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
 # SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
-# Start of session at: Mon Apr 27 23:08:47 2026
-# Process ID         : 1296
+# Start of session at: Tue Apr 28 20:28:57 2026
+# Process ID         : 29084
 # Current directory  : C:/Users/danny/460M-Labs/lab7/lab7.runs/impl_1
 # Command line       : vivado.exe -log Complete_MIPS.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source Complete_MIPS.tcl -notrace
 # Log file           : C:/Users/danny/460M-Labs/lab7/lab7.runs/impl_1/Complete_MIPS.vdi
@@ -19,6 +19,6 @@
 # Host memory        : 34014 MB
 # Swap memory        : 2147 MB
 # Total Virtual      : 36162 MB
-# Available Virtual  : 15054 MB
+# Available Virtual  : 12778 MB
 #-----------------------------------------------------------
 source Complete_MIPS.tcl -notrace

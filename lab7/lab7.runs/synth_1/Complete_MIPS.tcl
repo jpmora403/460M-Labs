@@ -57,6 +57,7 @@ if {$::dispatch::connected} {
 
 OPTRACE "synth_1" START { ROLLUP_AUTO }
 set_param general.usePosixSpawnForFork 1
+set_param chipscope.maxJobs 5
 OPTRACE "Creating in-memory project" START { }
 create_project -in_memory -part xc7a35tcpg236-1
 
@@ -82,6 +83,8 @@ read_verilog -library xil_defaultlib {
   C:/Users/danny/460M-Labs/lab7/design_src/Memory.v
   C:/Users/danny/460M-Labs/lab7/design_src/REG.v
   C:/Users/danny/460M-Labs/lab7/design_src/complex_clk_divider.v
+  C:/Users/danny/460M_Lab4/460M_Lab4.srcs/sources_1/new/debouncer.v
+  C:/Users/danny/460M_Lab4/460M_Lab4.srcs/sources_1/new/single_pulser.v
   C:/Users/danny/460M-Labs/lab7/design_src/slow_clock.v
   C:/Users/danny/460M-Labs/lab7/design_src/Complete_MIPS.v
 }
