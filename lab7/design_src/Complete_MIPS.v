@@ -16,6 +16,8 @@ module Complete_MIPS(
 
 
   wire CS, WE;
+  wire btnR_d, btnL_d;
+  wire btnR_s, btnL_s;
   wire [6:0] ADDR;
   wire [31:0] Mem_Bus;
   wire SCLK;
@@ -31,13 +33,18 @@ module Complete_MIPS(
   complexDivider c1 (.clk100Mhz(CLK), .slowClk(displayClk));
   MIPS CPU(SCLK, RST, halt, CS, WE, ADDR, Mem_Bus, r1_out, r2_out, switch);
   Memory MEM(CS, WE, SCLK, ADDR, Mem_Bus);
+  debouncer d1(.btn_in(btnR), .clk(CLK), .btn_out(btnR_d));
+  debouncer d2(.btn_in(btnL), .clk(CLK), .btn_out(btnL_d));
+  single_pulser s1(.clk(CLK), .btn_in(btnR_d), .pulse(btnR_s));
+  single_pulser s2(.clk(CLK), .btn_in(btnL_d), .pulse(btnL_s));
+  
   
   //assign led [7:0] = r1_out [7:0];
   
   always @(*)
   begin
   //Choose what to display on 7-segment
-  if(btnR) begin
+  if(btnR_s) begin
     display <= r2_out[31:16];
   end else begin
     display <= r2_out[15:0];
