@@ -37,7 +37,7 @@ module complexDivider(clk100Mhz, slowClk);
 
   always @ (posedge clk100Mhz)
   begin
-    if(counter == 50000000) begin
+    if(counter == 124_999) begin
       counter <= 1;
       slowClk <= ~slowClk;
     end

@@ -7,12 +7,16 @@
 `define f_code instr[5:0]
 `define numshift instr[10:6]
 
-module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
-  input CLK, RST, halt;
-  output reg CS, WE;
-  output [6:0] ADDR;
-  inout [31:0] Mem_Bus;
-  output [31:0] r1_out;
+module MIPS (
+  input CLK, RST, halt,
+  output reg CS, WE,
+  output [6:0] ADDR,
+  inout [31:0] Mem_Bus,
+  output [31:0] r1_out,
+  output [31:0] r2_out,
+  input [2:0] switch
+  );
+
 
   //special instructions (opcode == 000000), values of F code (bits 5-0):
   parameter add = 6'b100000;
@@ -24,6 +28,8 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
   parameter srl = 6'b000010;
   parameter sll = 6'b000000;
   parameter jr = 6'b001000;
+  parameter rbit = 6'b101111;
+  
 
   //non-special instructions, values of opcodes:
   parameter addi = 6'b001000;
@@ -34,6 +40,8 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
   parameter beq = 6'b000100;
   parameter bne = 6'b000101;
   parameter j = 6'b000010;
+  parameter jal = 6'b000011;
+  parameter lui = 6'b001111;
 
   //instruction format
   parameter R = 2'd0;
@@ -51,10 +59,11 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
   reg fetchDorI;
   wire [4:0] dr;
   reg [2:0] state, nstate;
+  reg [5:0] rbit_counter;
 
   //combinational
   assign imm_ext = (instr[15] == 1)? {16'hFFFF, instr[15:0]} : {16'h0000, instr[15:0]};//Sign extend immediate field
-  assign dr = (format == R)? instr[15:11] : instr[20:16]; //Destination Register MUX (MUX1)
+  assign dr = (format == R)? instr[15:11] : ((format == J) ? 5'd31 : instr[20:16]); //Destination Register MUX (MUX1)
   assign alu_in_A = readreg1;
   assign alu_in_B = (reg_or_imm_save)? imm_ext : readreg2; //ALU MUX (MUX2)
   assign reg_in = (alu_or_mem_save)? Mem_Bus : alu_result_save; //Data MUX
@@ -89,7 +98,9 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
         nstate = 3'd2; reg_or_imm = 0; alu_or_mem = 0;
         if (format == J) begin //jump, and finish
           npc = instr[6:0];
-          if (halt)
+          if (`opcode == 6'd3)
+            nstate = 3'd3;
+          else if (halt)
             nstate = 3'd7;
           else
             nstate = 3'd0;
@@ -109,10 +120,11 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
           end
           else if (`opcode == andi) op = and1;
           else if (`opcode == ori) op = or1;
+          else if (`opcode == lui) op = lui;
         end
       end
       2: begin //execute
-        nstate = 3'd3;
+        nstate = 3'd3;  
         if (opsave == and1) alu_result = alu_in_A & alu_in_B;
         else if (opsave == or1) alu_result = alu_in_A | alu_in_B;
         else if (opsave == add) alu_result = alu_in_A + alu_in_B;
@@ -121,6 +133,7 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
         else if (opsave == sll) alu_result = alu_in_B << `numshift;
         else if (opsave == slt) alu_result = (alu_in_A < alu_in_B)? 32'd1 : 32'd0;
         else if (opsave == xor1) alu_result = alu_in_A ^ alu_in_B;
+        else if (opsave == lui) alu_result = alu_in_B << 16;
         if (((alu_in_A == alu_in_B)&&(`opcode == beq)) || ((alu_in_A != alu_in_B)&&(`opcode == bne))) begin
           npc = pc + imm_ext[6:0];
           if (halt)
@@ -147,7 +160,7 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
             nstate = 3'd7;
         else
             nstate = 3'd0;
-        if ((format == R)||(`opcode == addi)||(`opcode == andi)||(`opcode == ori)) regw = 1;
+        if ((format == R)||(`opcode == addi)||(`opcode == andi)||(`opcode == ori)||(`opcode == jal)) regw = 1;
         else if (`opcode == sw) begin
           CS = 1;
           WE = 1;
@@ -164,7 +177,7 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
         else
             nstate = 3'd0;
         CS = 1;
-        if (`opcode == lw) regw = 1;
+        if ((`opcode == lw) || (`opcode == lui)) regw = 1;    
       end
       7: begin
         if (halt)
@@ -191,10 +204,15 @@ module MIPS (halt,  CLK, RST, CS, WE, ADDR, Mem_Bus, r1_out);
       opsave <= op;
       reg_or_imm_save <= reg_or_imm;
       alu_or_mem_save <= alu_or_mem;
+      rbit_counter <= 0;
     end
-    else if (state == 3'd2) alu_result_save <= alu_result;
+    else if (state == 3'd2) begin
+        alu_result_save <= alu_result;
+        rbit_counter <= rbit_counter + 1;
+    end
 
   end //always
 
 endmodule
+
 
